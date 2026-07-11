@@ -1,3 +1,4 @@
+// Optimized App component with memoized callbacks for debt visualizer
 import React, { useState, useEffect, useMemo } from 'react';
 import * as freighter from '@stellar/freighter-api';
 
