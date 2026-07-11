@@ -1,3 +1,7 @@
+/**
+ * @file App.tsx
+ * @description Core SplitPay dashboard component managing wallet connection, expense entries, and settlements.
+ */
 // Responsive layout adjustments applied
 // Optimized App component with memoized callbacks for debt visualizer
 import React, { useState, useEffect, useMemo } from 'react';
