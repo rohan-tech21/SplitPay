@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SplitPay - Group Details</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary": "#0e3819",
+                        "error-container": "#93000a",
+                        "outline": "#a08d80",
+                        "on-primary-fixed": "#2e1500",
+                        "on-primary-fixed-variant": "#6d3a00",
+                        "primary-fixed-dim": "#ffb77b",
+                        "secondary-container": "#524835",
+                        "inverse-primary": "#8c4f10",
+                        "inverse-surface": "#e5e2e1",
+                        "on-tertiary-fixed": "#002109",
+                        "surface": "#131313",
+                        "on-error-container": "#ffdad6",
+                        "on-surface": "#e5e2e1",
+                        "surface-bright": "#393939",
+                        "surface-variant": "#353534",
+                        "surface-container-lowest": "#0e0e0e",
+                        "primary-fixed": "#ffdcc2",
+                        "on-primary-container": "#432100",
+                        "on-secondary-fixed-variant": "#4f4533",
+                        "on-background": "#e5e2e1",
+                        "error": "#ffb4ab",
+                        "surface-container": "#201f1f",
+                        "tertiary-fixed": "#bfeec1",
+                        "surface-container-low": "#1c1b1b",
+                        "inverse-on-surface": "#313030",
+                        "surface-tint": "#ffb77b",
+                        "surface-container-highest": "#353534",
+                        "on-secondary-container": "#c5b79f",
+                        "tertiary-fixed-dim": "#a4d2a6",
+                        "on-tertiary-container": "#063113",
+                        "secondary-fixed": "#f0e0c8",
+                        "primary-container": "#c8803f",
+                        "surface-dim": "#131313",
+                        "primary": "#ffb77b",
+                        "secondary-fixed-dim": "#d3c5ad",
+                        "tertiary-container": "#709b73",
+                        "on-tertiary-fixed-variant": "#274f2e",
+                        "surface-container-high": "#2a2a2a",
+                        "outline-variant": "#524439",
+                        "on-secondary": "#382f1e",
+                        "on-surface-variant": "#d8c3b4",
+                        "on-secondary-fixed": "#221b0b",
+                        "secondary": "#d3c5ad",
+                        "on-error": "#690005",
+                        "on-primary": "#4d2700",
+                        "tertiary": "#a4d2a6",
+                        "background": "#131313"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "80px",
+                        "base": "8px",
+                        "container-max": "1200px",
+                        "lg": "48px",
+                        "md": "24px",
+                        "xs": "4px",
+                        "gutter": "24px",
+                        "sm": "12px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Manrope"],
+                        "display-lg-mobile": ["Manrope"],
+                        "headline-sm": ["Manrope"],
+                        "body-lg": ["Manrope"],
+                        "body-md": ["Manrope"],
+                        "headline-md": ["Manrope"],
+                        "label-sm": ["Manrope"],
+                        "label-md": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #121212; color: #e5e2e1; font-family: 'Manrope', sans-serif; }
+        .glass-panel {
+            background: rgba(26, 26, 26, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(247,231,206,0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+        .copper-gradient {
+            background: linear-gradient(135deg, #B87333 0%, #8c4f10 100%);
+        }
+        .copper-text {
+            background: linear-gradient(135deg, #ffdcc2 0%, #ffb77b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .border-copper { border-color: rgba(184, 115, 51, 0.3); }
+        .glass-nav {
+            background: rgba(18, 18, 18, 0.8);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border-bottom: 1px solid rgba(247,231,206,0.05);
+        }
+        .premium-shadow { box-shadow: 0 4px 24px rgba(0,0,0,0.4); }
+    </style>
+</head>
+<body class="bg-background text-on-background antialiased selection:bg-primary selection:text-on-primary">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 glass-nav shadow-sm border-b border-outline-variant/10 h-20">
+<div class="flex justify-between items-center h-20 px-xl max-w-container-max mx-auto">
+<div class="font-display-lg text-headline-md tracking-tight text-primary">SplitPay</div>
+<div class="hidden md:flex items-center gap-lg">
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-300" href="#">Dashboard</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-300" href="#">Activity</a>
+<a class="text-primary font-bold border-b-2 border-primary pb-1" href="#">Groups</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-300" href="#">Stellar Hub</a>
+</div>
+<div class="flex items-center gap-md">
+<button class="hidden md:flex bg-surface-container-high hover:bg-surface-container border border-outline-variant/30 text-on-surface px-6 py-2 rounded-full font-label-md transition-all duration-300 items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">account_balance_wallet</span>
+                    Connect Wallet
+                </button>
+<button class="md:hidden text-on-surface">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="pt-[120px] pb-xl px-4 md:px-xl max-w-container-max mx-auto">
+<!-- Hero Header -->
+<div class="relative w-full h-[300px] md:h-[400px] rounded-xl overflow-hidden mb-lg premium-shadow group">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" data-alt="A cinematic, high-end photography shot of a luxury coastal destination in Goa, featuring calm ocean waters at dusk with warm copper lighting reflecting on the waves. The aesthetic is sophisticated, moody, and minimalist, relying on deep blacks and warm metallic accents." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAOXEPappjZA6irL1rbuBsDfqfKbjs1xoXbNK5mtg8A2sWRWGzVjdwBH0FcksfopRu3dyj6pabBbIGYhyI4CwCgUDeqCs22xkwJDSmBxmkt_fLJuTRIdlTLCy-Yfu4gxbof3BBcriv-yq0ca6qcR-PqqC0Vt8Rvs_0c1aMHfTUmAiYCoi9484YmWrjYQJ0O30NXS-ENF4z1TCXxJinz6aK5cjcUFVcCLtko-zfT0GXt6Zvmv1bV1XD_0C02ef2QwRl26zqWSayjYj7R')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent"></div>
+<div class="absolute bottom-0 left-0 w-full p-md md:p-xl flex flex-col md:flex-row justify-between items-end gap-md">
+<div>
+<div class="flex items-center gap-sm mb-sm">
+<span class="bg-surface-container-high/50 backdrop-blur-md border border-outline-variant/30 text-on-surface px-3 py-1 rounded-full font-label-sm uppercase tracking-wider flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">flight_takeoff</span> Active Trip
+                        </span>
+</div>
+<h1 class="font-display-lg text-display-lg-mobile md:text-display-lg text-on-surface mb-2">Goa Trip 2024</h1>
+<p class="font-body-lg text-on-surface-variant">4 Members • Last active 2 hours ago</p>
+</div>
+<div class="flex gap-4 w-full md:w-auto">
+<button class="flex-1 md:flex-none bg-surface-container border border-outline-variant/20 hover:border-primary/50 text-on-surface px-6 py-3 rounded-lg font-label-md transition-all flex items-center justify-center gap-2 glass-panel">
+<span class="material-symbols-outlined">add_circle</span> Add Expense
+                    </button>
+<button class="flex-1 md:flex-none copper-gradient text-on-primary px-8 py-3 rounded-lg font-label-md shadow-[0_0_15px_rgba(184,115,51,0.3)] hover:shadow-[0_0_25px_rgba(184,115,51,0.5)] transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">account_balance</span> Settle Up
+                    </button>
+</div>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Left Column: Timeline & Analytics (8 cols) -->
+<div class="lg:col-span-8 flex flex-col gap-gutter">
+<!-- Quick Stats Row -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<div class="glass-panel p-md rounded-xl border-t-2 border-t-primary/30 flex flex-col justify-center">
+<p class="font-label-sm text-on-surface-variant mb-1 uppercase tracking-wider">Total Group Spend</p>
+<p class="font-headline-md copper-text">$4,250.00</p>
+</div>
+<div class="glass-panel p-md rounded-xl flex flex-col justify-center">
+<p class="font-label-sm text-on-surface-variant mb-1 uppercase tracking-wider">Your Share</p>
+<p class="font-headline-md text-on-surface">$1,062.50</p>
+</div>
+<div class="glass-panel p-md rounded-xl flex flex-col justify-center">
+<p class="font-label-sm text-on-surface-variant mb-1 uppercase tracking-wider">You Paid</p>
+<p class="font-headline-md text-on-surface">$1,500.00</p>
+</div>
+<div class="glass-panel p-md rounded-xl border-t-2 border-t-tertiary/30 flex flex-col justify-center">
+<p class="font-label-sm text-on-surface-variant mb-1 uppercase tracking-wider">You are owed</p>
+<p class="font-headline-md text-tertiary">+$437.50</p>
+</div>
+</div>
+<!-- Premium Timeline -->
+<div class="glass-panel rounded-xl p-md md:p-lg">
+<div class="flex justify-between items-center mb-lg">
+<h2 class="font-headline-md text-on-surface">Recent Expenses</h2>
+<button class="text-primary hover:text-primary-fixed transition-colors font-label-md flex items-center gap-1">
+                            View All <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+<div class="flex flex-col gap-6 relative before:content-[''] before:absolute before:left-[24px] before:top-[10px] before:bottom-[10px] before:w-[1px] before:bg-outline-variant/20">
+<!-- Expense Item -->
+<div class="flex items-start gap-md relative z-10">
+<div class="w-12 h-12 rounded-full bg-surface-container-high border border-outline-variant/30 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary">restaurant</span>
+</div>
+<div class="flex-1 pb-6 border-b border-outline-variant/10">
+<div class="flex justify-between items-start mb-1">
+<div>
+<p class="font-headline-sm text-on-surface">Seafood Dinner at Martin's Corner</p>
+<p class="font-body-md text-on-surface-variant">Paid by <span class="text-on-surface font-medium">Alex</span> • Split equally</p>
+</div>
+<div class="text-right">
+<p class="font-headline-sm text-on-surface">$245.00</p>
+<p class="font-label-sm text-error/80 mt-1">You owe $61.25</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Expense Item -->
+<div class="flex items-start gap-md relative z-10">
+<div class="w-12 h-12 rounded-full bg-surface-container-high border border-outline-variant/30 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary">directions_car</span>
+</div>
+<div class="flex-1 pb-6 border-b border-outline-variant/10">
+<div class="flex justify-between items-start mb-1">
+<div>
+<p class="font-headline-sm text-on-surface">Airport Transfer</p>
+<p class="font-body-md text-on-surface-variant">Paid by <span class="text-primary font-medium">You</span> • Split equally</p>
+</div>
+<div class="text-right">
+<p class="font-headline-sm text-on-surface">$80.00</p>
+<p class="font-label-sm text-tertiary/80 mt-1">Lent $60.00</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Expense Item -->
+<div class="flex items-start gap-md relative z-10">
+<div class="w-12 h-12 rounded-full bg-surface-container-high border border-outline-variant/30 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary">hotel</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-1">
+<div>
+<p class="font-headline-sm text-on-surface">Taj Exotica Resort</p>
+<p class="font-body-md text-on-surface-variant">Paid by <span class="text-primary font-medium">You</span> • Split custom</p>
+</div>
+<div class="text-right">
+<p class="font-headline-sm text-on-surface">$1,200.00</p>
+<p class="font-label-sm text-tertiary/80 mt-1">Lent $800.00</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Balances & Members (4 cols) -->
+<div class="lg:col-span-4 flex flex-col gap-gutter">
+<!-- Optimal Settlement Matrix -->
+<div class="glass-panel rounded-xl p-md">
+<div class="flex justify-between items-center mb-md border-b border-outline-variant/20 pb-4">
+<h2 class="font-headline-sm text-on-surface">Suggested Settlements</h2>
+<span class="material-symbols-outlined text-on-surface-variant">account_tree</span>
+</div>
+<p class="font-body-md text-on-surface-variant mb-4">Minimize transactions to clear all debts.</p>
+<div class="flex flex-col gap-3">
+<div class="bg-surface-container-low p-3 rounded-lg border border-outline-variant/10 flex items-center justify-between group hover:border-primary/30 transition-colors cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center text-xs font-bold">S</div>
+<span class="material-symbols-outlined text-on-surface-variant text-[16px]">arrow_forward</span>
+<div class="w-8 h-8 rounded-full bg-primary/20 text-primary border border-primary/30 flex items-center justify-center text-xs font-bold">U</div>
+</div>
+<div class="text-right">
+<p class="font-label-md text-on-surface">$210.00</p>
+<p class="font-label-sm text-primary group-hover:underline">Pay Now</p>
+</div>
+</div>
+<div class="bg-surface-container-low p-3 rounded-lg border border-outline-variant/10 flex items-center justify-between group hover:border-primary/30 transition-colors cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center text-xs font-bold">M</div>
+<span class="material-symbols-outlined text-on-surface-variant text-[16px]">arrow_forward</span>
+<div class="w-8 h-8 rounded-full bg-primary/20 text-primary border border-primary/30 flex items-center justify-center text-xs font-bold">U</div>
+</div>
+<div class="text-right">
+<p class="font-label-md text-on-surface">$166.25</p>
+<p class="font-label-sm text-primary group-hover:underline">Pay Now</p>
+</div>
+</div>
+<div class="bg-surface-container-low p-3 rounded-lg border border-outline-variant/10 flex items-center justify-between opacity-50">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center text-xs font-bold">S</div>
+<span class="material-symbols-outlined text-on-surface-variant text-[16px]">arrow_forward</span>
+<div class="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center text-xs font-bold">A</div>
+</div>
+<div class="text-right">
+<p class="font-label-md text-on-surface">$45.00</p>
+<p class="font-label-sm text-on-surface-variant">Pending</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Category Analytics (Minimalist) -->
+<div class="glass-panel rounded-xl p-md">
+<h2 class="font-headline-sm text-on-surface mb-md">Spending by Category</h2>
+<div class="flex flex-col gap-4">
+<div>
+<div class="flex justify-between text-label-md mb-2">
+<span class="text-on-surface flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-primary">hotel</span> Accommodation</span>
+<span class="text-on-surface-variant">50%</span>
+</div>
+<div class="h-1 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 50%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-label-md mb-2">
+<span class="text-on-surface flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-[#d3c5ad]">restaurant</span> Food &amp; Drinks</span>
+<span class="text-on-surface-variant">30%</span>
+</div>
+<div class="h-1 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-[#d3c5ad] rounded-full" style="width: 30%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-label-md mb-2">
+<span class="text-on-surface flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-[#a4d2a6]">flight</span> Transport</span>
+<span class="text-on-surface-variant">20%</span>
+</div>
+<div class="h-1 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-[#a4d2a6] rounded-full" style="width: 20%"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full py-lg mt-xl bg-surface-container-lowest border-t border-outline-variant/10">
+<div class="flex flex-col md:flex-row justify-between items-center gap-md px-xl max-w-container-max mx-auto">
+<div class="font-display-lg text-headline-sm text-primary">SplitPay</div>
+<div class="flex gap-6">
+<a class="font-body-md text-on-surface-variant hover:text-primary-fixed transition-colors" href="#">Privacy Policy</a>
+<a class="font-body-md text-on-surface-variant hover:text-primary-fixed transition-colors" href="#">Terms of Service</a>
+<a class="font-body-md text-on-surface-variant hover:text-primary-fixed transition-colors" href="#">Stellar Network</a>
+<a class="font-body-md text-on-surface-variant hover:text-primary-fixed transition-colors" href="#">Documentation</a>
+</div>
+<div class="font-body-md text-on-surface-variant">
+                © 2024 SplitPay. Precision in Decentralized Finance.
+            </div>
+</div>
+</footer>
+</body></html>
