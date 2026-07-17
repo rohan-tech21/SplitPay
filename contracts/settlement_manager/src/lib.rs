@@ -307,4 +307,5 @@ impl SettlementManager {
     }
 }
 
+#[cfg(test)]
 mod test;
