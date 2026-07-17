@@ -1,4 +1,7 @@
 #![no_std]
+#[cfg(test)]
+mod test;
+
 use soroban_sdk::{contract, contractimpl, contracttype, contracterror, Env, Address, String, Vec, Symbol, symbol_short};
 
 #[soroban_sdk::contractclient(name = "GroupManagerClient")]
