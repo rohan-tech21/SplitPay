@@ -63,8 +63,8 @@ export const Header: React.FC<HeaderProps> = ({
           ))}
         </div>
 
-        {/* DESKTOP WALLET PANEL */}
-        <div className="hidden lg:flex items-center gap-4">
+        {/* DESKTOP & TABLET WALLET PANEL */}
+        <div className="hidden sm:flex items-center gap-4">
           {walletConnected && userAddress && (
             <div className="flex flex-col text-right">
               <span className="text-[9px] text-stone-gray font-mono uppercase">Connected</span>
@@ -83,7 +83,7 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             disabled={loading}
             onClick={onConnect}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black tracking-wide uppercase transition-all duration-300 ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black tracking-wide uppercase transition-all duration-300 ${
               walletConnected
                 ? "bg-[#355E3B]/20 text-[#A4D2A6] border border-[#355E3B]/40"
                 : "btn-primary cursor-pointer"
@@ -104,7 +104,17 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* MOBILE CONTROLS & HAMBURGER */}
-        <div className="flex items-center gap-2 lg:hidden">
+        <div className="flex items-center gap-2 sm:hidden">
+          {!walletConnected && (
+            <button
+              onClick={onConnect}
+              disabled={loading}
+              className="p-2 rounded-lg bg-[#B87333]/15 border border-[rgba(184,115,51,0.35)] text-[#B87333] hover:bg-[#B87333]/25 transition-colors cursor-pointer"
+              title="Connect Freighter"
+            >
+              <Wallet className="w-4 h-4" />
+            </button>
+          )}
           {walletConnected && (
             <div className="bg-[#1A1A1A] border border-[rgba(247,231,206,0.08)] px-2.5 py-1.5 rounded-lg text-xs font-bold text-[#F7E7CE]">
               {parseFloat(userBalance).toFixed(1)} XLM
