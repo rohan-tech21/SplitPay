@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SplitPay - Precision in Decentralized Finance</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary": "#0e3819",
+                        "error-container": "#93000a",
+                        "outline": "#a08d80",
+                        "on-primary-fixed": "#2e1500",
+                        "on-primary-fixed-variant": "#6d3a00",
+                        "primary-fixed-dim": "#ffb77b",
+                        "secondary-container": "#524835",
+                        "inverse-primary": "#8c4f10",
+                        "inverse-surface": "#e5e2e1",
+                        "on-tertiary-fixed": "#002109",
+                        "surface": "#121212", /* Override for Obsidian */
+                        "on-error-container": "#ffdad6",
+                        "on-surface": "#e5e2e1",
+                        "surface-bright": "#393939",
+                        "surface-variant": "#1A1A1A", /* Level 1 Card */
+                        "surface-container-lowest": "#0e0e0e",
+                        "primary-fixed": "#ffdcc2",
+                        "on-primary-container": "#432100",
+                        "on-secondary-fixed-variant": "#4f4533",
+                        "on-background": "#e5e2e1",
+                        "error": "#ffb4ab",
+                        "surface-container": "#1A1A1A",
+                        "tertiary-fixed": "#bfeec1",
+                        "surface-container-low": "#1c1b1b",
+                        "inverse-on-surface": "#313030",
+                        "surface-tint": "#ffb77b",
+                        "surface-container-highest": "#353534",
+                        "on-secondary-container": "#c5b79f",
+                        "tertiary-fixed-dim": "#a4d2a6",
+                        "on-tertiary-container": "#063113",
+                        "secondary-fixed": "#f0e0c8",
+                        "primary-container": "#c8803f",
+                        "surface-dim": "#131313",
+                        "primary": "#B87333", /* Copper Override */
+                        "secondary-fixed-dim": "#d3c5ad",
+                        "tertiary-container": "#709b73",
+                        "on-tertiary-fixed-variant": "#274f2e",
+                        "surface-container-high": "#2a2a2a",
+                        "outline-variant": "rgba(247,231,206,0.08)", /* Subtle engraving */
+                        "on-secondary": "#382f1e",
+                        "on-surface-variant": "#d8c3b4",
+                        "on-secondary-fixed": "#221b0b",
+                        "secondary": "#d3c5ad",
+                        "on-error": "#690005",
+                        "on-primary": "#121212", /* Dark text on Copper */
+                        "tertiary": "#a4d2a6",
+                        "background": "#121212" /* Infinite floor */
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "80px",
+                        "base": "8px",
+                        "container-max": "1200px",
+                        "lg": "48px",
+                        "md": "24px",
+                        "xs": "4px",
+                        "gutter": "24px",
+                        "sm": "12px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Manrope"],
+                        "display-lg-mobile": ["Manrope"],
+                        "headline-sm": ["Manrope"],
+                        "body-lg": ["Manrope"],
+                        "body-md": ["Manrope"],
+                        "headline-md": ["Manrope"],
+                        "label-sm": ["Manrope"],
+                        "label-md": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["64px", {"lineHeight": "72px", "letterSpacing": "-0.03em", "fontWeight": "800"}],
+                        "display-lg-mobile": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #121212;
+            color: #e5e2e1;
+        }
+        .obsidian-card {
+            background-color: #1A1A1A;
+            border: 1px solid rgba(247,231,206,0.08);
+            transition: all 0.3s ease;
+        }
+        .obsidian-card:hover {
+            box-shadow: 0 0 20px rgba(184, 115, 51, 0.05), inset 0 1px 1px rgba(255,255,255,0.02);
+            border-color: rgba(184, 115, 51, 0.3);
+        }
+        .copper-accent {
+            border-top: 2px solid #B87333;
+        }
+        .glass-overlay {
+            background: rgba(18, 18, 18, 0.8);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+        }
+        .btn-primary {
+            background-color: #B87333;
+            color: #121212;
+            box-shadow: 0 2px 8px rgba(184, 115, 51, 0.2);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(184, 115, 51, 0.3);
+        }
+        .btn-secondary {
+            background-color: transparent;
+            border: 1px solid rgba(247, 231, 206, 0.15);
+            color: #e5e2e1;
+            transition: all 0.3s ease;
+        }
+        .btn-secondary:hover {
+            border-color: #B87333;
+            background-color: rgba(184, 115, 51, 0.05);
+        }
+        .text-copper {
+            color: #B87333;
+        }
+    </style>
+</head>
+<body class="font-body-md antialiased selection:bg-primary selection:text-on-primary overflow-x-hidden">
+<!-- TopNavBar component -->
+<nav class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface/80 backdrop-blur-xl border-b border-outline-variant/10 shadow-sm flex justify-between items-center h-20 px-xl max-w-container-max mx-auto left-0 right-0 glass-overlay">
+<div class="font-display-lg text-headline-md tracking-tight text-primary dark:text-primary">
+            SplitPay
+        </div>
+<div class="hidden md:flex gap-md items-center">
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-300" href="#">Dashboard</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-300" href="#">Activity</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-300" href="#">Groups</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-300" href="#">Stellar Hub</a>
+</div>
+<div>
+<button class="btn-primary font-label-md px-6 py-3 rounded-DEFAULT tracking-wide">Connect Wallet</button>
+</div>
+</nav>
+<main class="pt-[140px] pb-xl px-4 md:px-xl max-w-container-max mx-auto space-y-[120px]">
+<!-- Hero Section -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-center min-h-[70vh]">
+<div class="lg:col-span-5 space-y-8 z-10">
+<div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary font-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                    Decentralized Precision
+                </div>
+<h1 class="font-display-lg-mobile md:font-display-lg text-on-surface">
+                    Settle with <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-[#ffb77b]">Absolute</span> Certainty.
+                </h1>
+<p class="font-body-lg text-on-surface-variant max-w-lg">
+                    The intersection of high finance and cryptographic security. SplitPay orchestrates complex group settlements on the Stellar network with unparalleled transparency.
+                </p>
+<div class="flex flex-wrap gap-4 pt-4">
+<button class="btn-primary font-label-md px-8 py-4 rounded-DEFAULT tracking-wide">Launch App</button>
+<button class="btn-secondary font-label-md px-8 py-4 rounded-DEFAULT tracking-wide flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">play_circle</span> View Demo
+                    </button>
+</div>
+</div>
+<div class="lg:col-span-7 relative w-full aspect-[4/3] rounded-xl overflow-hidden obsidian-card p-2 group">
+<div class="absolute inset-0 bg-gradient-to-tr from-primary/10 to-transparent opacity-50"></div>
+<img alt="SplitPay Interface Mockup" class="w-full h-full object-cover rounded-lg mix-blend-lighten opacity-90 group-hover:opacity-100 transition-opacity duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-wgRH0Q2zucww6Px0zIeNqBzSIHaYDeA4Hlknnvz9uvHvuW3Qi3dV4-mXKnZq3NLqksWUw0zYToJdVeblbx7zWvHJRSbRXxnfiFn089k9-8RFrRkUjle740nx_rk9JLK-rvDEb73-yutdK7G1MGzfVSSZ0YSUldxBLAblpmO1_4IHiYUh_9kHbaBJotFIw1F_iP7RAJ2AkKHAvHPp7gQqtx_mNb5ib6AeSS8Z7mXd_G__G5fm-ypnTS_O-dhAIlD0AfdagZjDNxDi"/>
+<!-- Floating Glass Elements -->
+<div class="absolute top-1/4 -left-12 glass-overlay p-4 rounded-lg border border-outline-variant/20 hidden md:block animate-[bounce_4s_infinite]">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">done_all</span>
+</div>
+<div>
+<p class="font-label-sm text-on-surface-variant">Settlement Verified</p>
+<p class="font-headline-sm text-on-surface">$1,450.00</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Social Proof / Stats -->
+<section class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-gutter">
+<div class="obsidian-card copper-accent p-6 rounded-lg flex flex-col gap-2">
+<span class="material-symbols-outlined text-primary text-[24px]">account_balance_wallet</span>
+<p class="font-label-sm text-on-surface-variant uppercase tracking-widest mt-2">Total Volume</p>
+<p class="font-headline-md text-on-surface">$4.2B+</p>
+</div>
+<div class="obsidian-card p-6 rounded-lg flex flex-col gap-2">
+<span class="material-symbols-outlined text-primary text-[24px]">group</span>
+<p class="font-label-sm text-on-surface-variant uppercase tracking-widest mt-2">Active Institutions</p>
+<p class="font-headline-md text-on-surface">1,250</p>
+</div>
+<div class="obsidian-card p-6 rounded-lg flex flex-col gap-2">
+<span class="material-symbols-outlined text-primary text-[24px]">bolt</span>
+<p class="font-label-sm text-on-surface-variant uppercase tracking-widest mt-2">Avg Settlement</p>
+<p class="font-headline-md text-on-surface">3.2s</p>
+</div>
+<div class="obsidian-card p-6 rounded-lg flex flex-col gap-2">
+<span class="material-symbols-outlined text-primary text-[24px]">security</span>
+<p class="font-label-sm text-on-surface-variant uppercase tracking-widest mt-2">Audit Status</p>
+<p class="font-headline-md text-on-surface">Verified</p>
+</div>
+</section>
+<!-- Features Bento Grid -->
+<section class="space-y-12">
+<div class="text-center max-w-2xl mx-auto space-y-4">
+<h2 class="font-display-lg-mobile md:font-display-lg text-on-surface text-3xl">Architected for Scale.</h2>
+<p class="font-body-lg text-on-surface-variant">Sophisticated tools wrapped in an intuitive, tactile interface.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[300px]">
+<!-- Feature 1: Large Block -->
+<div class="obsidian-card rounded-xl p-8 col-span-1 md:col-span-2 relative overflow-hidden group flex flex-col justify-between">
+<div class="absolute right-0 top-0 w-1/2 h-full bg-gradient-to-l from-primary/10 to-transparent"></div>
+<div class="relative z-10 w-2/3">
+<div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center mb-6 border border-outline-variant/30">
+<span class="material-symbols-outlined text-primary">hub</span>
+</div>
+<h3 class="font-headline-md text-on-surface mb-2">Create Ecosystems</h3>
+<p class="font-body-md text-on-surface-variant">Instantiate robust financial groups with granular permission controls. Perfect for corporate retreats, syndicate investments, or shared living expenses.</p>
+</div>
+<div class="absolute bottom-[-20%] right-[-10%] w-[60%] h-[80%] bg-surface-container-low rounded-tl-2xl border-t border-l border-outline-variant/20 p-4 shadow-2xl transform group-hover:-translate-y-4 group-hover:-translate-x-4 transition-transform duration-500">
+<div class="w-full h-8 border-b border-outline-variant/10 flex items-center px-2 gap-2">
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+</div>
+<div class="p-4 space-y-3">
+<div class="h-4 w-3/4 bg-surface-bright rounded"></div>
+<div class="h-4 w-1/2 bg-surface-bright rounded"></div>
+</div>
+</div>
+</div>
+<!-- Feature 2 -->
+<div class="obsidian-card rounded-xl p-8 relative overflow-hidden group flex flex-col justify-between">
+<div class="relative z-10">
+<div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center mb-6 border border-outline-variant/30">
+<span class="material-symbols-outlined text-primary">calculate</span>
+</div>
+<h3 class="font-headline-md text-on-surface mb-2">Smart Settlements</h3>
+<p class="font-body-md text-on-surface-variant">Algorithmic debt minimization reduces complex inter-party liabilities into simple, single-transaction resolutions.</p>
+</div>
+</div>
+<!-- Feature 3 -->
+<div class="obsidian-card rounded-xl p-8 relative overflow-hidden group flex flex-col justify-between">
+<div class="relative z-10">
+<div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center mb-6 border border-outline-variant/30">
+<span class="material-symbols-outlined text-primary">receipt_long</span>
+</div>
+<h3 class="font-headline-md text-on-surface mb-2">Immutable Records</h3>
+<p class="font-body-md text-on-surface-variant">Every transaction is cryptographicly secured on the ledger, providing a permanent, transparent history.</p>
+</div>
+</div>
+<!-- Feature 4: Wide -->
+<div class="obsidian-card copper-accent rounded-xl p-8 col-span-1 md:col-span-2 relative overflow-hidden flex items-center justify-between">
+<div class="w-1/2 z-10">
+<h3 class="font-headline-md text-on-surface mb-2">Cross-Asset Capability</h3>
+<p class="font-body-md text-on-surface-variant">Settle in USDC, XLM, or any supported Stellar asset instantly.</p>
+</div>
+<div class="w-1/3 flex justify-end">
+<span class="material-symbols-outlined text-[120px] text-primary/20">currency_exchange</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Interactive Workflow -->
+<section class="space-y-12 py-12">
+<div class="text-center max-w-2xl mx-auto space-y-4">
+<h2 class="font-display-lg-mobile md:font-display-lg text-on-surface text-3xl">The Resolution Protocol.</h2>
+</div>
+<div class="relative w-full overflow-x-auto pb-8 hide-scrollbar">
+<div class="flex gap-6 min-w-max px-4">
+<!-- Step 1 -->
+<div class="obsidian-card w-[280px] p-6 rounded-lg relative">
+<div class="absolute -top-3 -left-3 w-8 h-8 rounded-full bg-surface border border-primary flex items-center justify-center font-label-sm text-primary">01</div>
+<span class="material-symbols-outlined text-primary mb-4">group_add</span>
+<h4 class="font-headline-sm text-on-surface mb-2">Initiate Entity</h4>
+<p class="font-body-md text-on-surface-variant text-sm">Create a secure enclave for the collective.</p>
+</div>
+<!-- Line connector visual hack -->
+<div class="w-12 flex items-center"><div class="w-full h-px bg-outline-variant/30"></div></div>
+<!-- Step 2 -->
+<div class="obsidian-card w-[280px] p-6 rounded-lg relative">
+<div class="absolute -top-3 -left-3 w-8 h-8 rounded-full bg-surface border border-outline-variant flex items-center justify-center font-label-sm text-on-surface-variant">02</div>
+<span class="material-symbols-outlined text-on-surface-variant mb-4">person_add</span>
+<h4 class="font-headline-sm text-on-surface mb-2">Provision Access</h4>
+<p class="font-body-md text-on-surface-variant text-sm">Invite stakeholders via secure links.</p>
+</div>
+<div class="w-12 flex items-center"><div class="w-full h-px bg-outline-variant/30"></div></div>
+<!-- Step 3 -->
+<div class="obsidian-card w-[280px] p-6 rounded-lg relative">
+<div class="absolute -top-3 -left-3 w-8 h-8 rounded-full bg-surface border border-outline-variant flex items-center justify-center font-label-sm text-on-surface-variant">03</div>
+<span class="material-symbols-outlined text-on-surface-variant mb-4">add_card</span>
+<h4 class="font-headline-sm text-on-surface mb-2">Log Liabilities</h4>
+<p class="font-body-md text-on-surface-variant text-sm">Input expenses with receipt verification.</p>
+</div>
+<div class="w-12 flex items-center"><div class="w-full h-px bg-outline-variant/30"></div></div>
+<!-- Step 4 -->
+<div class="obsidian-card w-[280px] p-6 rounded-lg relative">
+<div class="absolute -top-3 -left-3 w-8 h-8 rounded-full bg-surface border border-outline-variant flex items-center justify-center font-label-sm text-on-surface-variant">04</div>
+<span class="material-symbols-outlined text-on-surface-variant mb-4">account_balance</span>
+<h4 class="font-headline-sm text-on-surface mb-2">Execute Settlement</h4>
+<p class="font-body-md text-on-surface-variant text-sm">One-click clearing of all debts.</p>
+</div>
+</div>
+</div>
+<style>
+                .hide-scrollbar::-webkit-scrollbar { display: none; }
+                .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+            </style>
+</section>
+</main>
+<!-- Footer component -->
+<footer class="w-full py-lg mt-xl bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-outline-variant/10">
+<div class="flex flex-col md:flex-row justify-between items-center gap-md px-xl max-w-container-max mx-auto">
+<div class="font-display-lg text-headline-sm text-primary">
+                SplitPay
+            </div>
+<div class="font-body-md text-body-md text-on-surface-variant">
+                © 2024 SplitPay. Precision in Decentralized Finance.
+            </div>
+<div class="flex gap-6">
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary-fixed transition-colors" href="#">Privacy Policy</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary-fixed transition-colors" href="#">Terms of Service</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary-fixed transition-colors" href="#">Stellar Network</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary-fixed transition-colors" href="#">Documentation</a>
+</div>
+</div>
+</footer>
+</body></html>
