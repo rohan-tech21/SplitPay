@@ -1,4 +1,5 @@
 import React from "react";
+import { Plus, ArrowUpRight, ArrowDownLeft, Scale, ArrowRight, Activity, ExternalLink, Calendar } from "lucide-react";
 import type { Group, ActivityLog } from "../hooks/useContractsData";
 
 interface DashboardViewProps {
@@ -35,120 +36,137 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const netBalance = totalOwed - totalOwe;
 
   return (
-    <div className="space-y-6 fade-in">
+    <div className="space-y-6 fade-in max-w-6xl mx-auto px-4 sm:px-6">
       {/* HEADER HERO */}
-      <div className="glass-panel copper-border-top rounded-2xl p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div>
-          <h2 className="text-2xl font-black text-on-surface tracking-wide">
+      <div className="premium-card rounded-2xl p-6 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div className="space-y-1">
+          <h2 className="text-xl sm:text-2xl font-black text-[#F7E7CE] tracking-tight">
             Welcome back, {userAddress ? `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}` : "Stellar Auditor"}
           </h2>
-          <p className="text-sm text-on-surface-variant mt-1">
+          <p className="text-xs sm:text-sm text-stone-gray leading-relaxed">
             Real-time balance settlement driven by Soroban smart contracts.
           </p>
         </div>
         <button
           onClick={() => setShowCreateGroupModal(true)}
-          className="copper-button flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-black uppercase shadow-lg"
+          className="btn-primary flex items-center gap-2 px-5 py-3 rounded-xl text-xs uppercase tracking-wide cursor-pointer w-full md:w-auto justify-center"
         >
-          <span className="material-symbols-outlined text-sm font-bold">add</span>
-          Create New Group
+          <Plus className="w-4 h-4 stroke-[3]" />
+          <span>Create New Group</span>
         </button>
       </div>
 
       {/* METRICS GRID */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <div className="glass-card rounded-2xl p-6 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
-            <span className="material-symbols-outlined text-2xl">account_balance</span>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+        {/* NET BALANCE */}
+        <div className="premium-card rounded-2xl p-5 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-[#B87333]/15 flex items-center justify-center text-[#B87333] border border-[rgba(184,115,51,0.25)]">
+            <Scale className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-[10px] text-on-surface-variant font-mono uppercase tracking-wider">Net Balance</p>
-            <h3 className={`text-xl font-black tracking-wide ${netBalance >= 0 ? "text-primary" : "text-[#EF4444]"}`}>
+            <p className="text-[10px] text-stone-gray font-mono uppercase tracking-wider">Net Balance</p>
+            <h3 className={`text-lg sm:text-xl font-black tracking-tight ${netBalance >= 0 ? "text-[#B87333]" : "text-rose-500"}`}>
               {netBalance >= 0 ? "+" : ""}${netBalance.toFixed(2)}
             </h3>
           </div>
         </div>
 
-        <div className="glass-card rounded-2xl p-6 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center text-green-400 border border-green-500/20">
-            <span className="material-symbols-outlined text-2xl">arrow_circle_up</span>
+        {/* YOU ARE OWED */}
+        <div className="premium-card rounded-2xl p-5 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-[#355E3B]/15 flex items-center justify-center text-[#A4D2A6] border border-[#355E3B]/35">
+            <ArrowUpRight className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-[10px] text-on-surface-variant font-mono uppercase tracking-wider">You Are Owed</p>
-            <h3 className="text-xl font-black tracking-wide text-green-400">
+            <p className="text-[10px] text-stone-gray font-mono uppercase tracking-wider">You Are Owed</p>
+            <h3 className="text-lg sm:text-xl font-black tracking-tight text-[#A4D2A6]">
               ${totalOwed.toFixed(2)}
             </h3>
           </div>
         </div>
 
-        <div className="glass-card rounded-2xl p-6 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center text-red-400 border border-red-500/20">
-            <span className="material-symbols-outlined text-2xl">arrow_circle_down</span>
+        {/* YOU OWE */}
+        <div className="premium-card rounded-2xl p-5 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-400 border border-rose-500/20">
+            <ArrowDownLeft className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-[10px] text-on-surface-variant font-mono uppercase tracking-wider">You Owe</p>
-            <h3 className="text-xl font-black tracking-wide text-red-400">
+            <p className="text-[10px] text-stone-gray font-mono uppercase tracking-wider">You Owe</p>
+            <h3 className="text-lg sm:text-xl font-black tracking-tight text-rose-400">
               ${totalOwe.toFixed(2)}
             </h3>
           </div>
         </div>
       </div>
 
-      {/* DETAILED STATS & RECENT ACTIVITY */}
+      {/* GRID SECTION */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* STATS */}
-        <div className="glass-card rounded-2xl p-6 space-y-4 lg:col-span-1">
-          <h4 className="text-sm font-extrabold text-on-surface border-b border-outline-variant/10 pb-3">Quick Navigation</h4>
-          <div className="space-y-2">
-            <button
-              onClick={() => setActiveTab("groups")}
-              className="w-full flex items-center justify-between p-3 rounded-xl bg-surface-container hover:bg-surface-container-high border border-outline-variant/5 text-xs text-on-surface font-semibold transition"
-            >
-              <span>Manage Shared Groups</span>
-              <span className="material-symbols-outlined text-sm text-primary">arrow_forward</span>
-            </button>
-            <button
-              onClick={() => setActiveTab("stellar")}
-              className="w-full flex items-center justify-between p-3 rounded-xl bg-surface-container hover:bg-surface-container-high border border-outline-variant/5 text-xs text-on-surface font-semibold transition"
-            >
-              <span>Verify Smart Contracts</span>
-              <span className="material-symbols-outlined text-sm text-primary">arrow_forward</span>
-            </button>
+        {/* QUICK NAVIGATION */}
+        <div className="premium-card rounded-2xl p-6 space-y-4 lg:col-span-1 flex flex-col justify-between">
+          <div className="space-y-4">
+            <h4 className="text-xs font-bold font-mono text-stone-gray uppercase tracking-wider border-b border-[rgba(247,231,206,0.08)] pb-2">
+              Quick Actions
+            </h4>
+            <div className="space-y-2">
+              <button
+                onClick={() => setActiveTab("groups")}
+                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-[#121212]/80 hover:bg-[#B87333]/5 border border-[rgba(247,231,206,0.08)] hover:border-[rgba(184,115,51,0.3)] text-xs text-[#F7E7CE] font-bold transition-all duration-200"
+              >
+                <span>Manage Shared Groups</span>
+                <ArrowRight className="w-4 h-4 text-[#B87333]" />
+              </button>
+              <button
+                onClick={() => setActiveTab("stellar")}
+                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-[#121212]/80 hover:bg-[#B87333]/5 border border-[rgba(247,231,206,0.08)] hover:border-[rgba(184,115,51,0.3)] text-xs text-[#F7E7CE] font-bold transition-all duration-200"
+              >
+                <span>Verify Smart Contracts</span>
+                <ArrowRight className="w-4 h-4 text-[#B87333]" />
+              </button>
+            </div>
+          </div>
+          
+          <div className="pt-6 hidden lg:block">
+            <div className="p-4 rounded-xl bg-[#121212]/50 border border-[rgba(184,115,51,0.1)] text-[11px] text-stone-gray leading-relaxed flex gap-2.5 items-start">
+              <Activity className="w-4 h-4 text-[#B87333] shrink-0 mt-0.5" />
+              <span>
+                All settlements, additions, and group creations generate immediate events on the Soroban consensus layer.
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* FEED */}
-        <div className="glass-card rounded-2xl p-6 lg:col-span-2 space-y-4">
-          <h4 className="text-sm font-extrabold text-on-surface border-b border-outline-variant/10 pb-3">Recent On-Chain Activity</h4>
-          <div className="space-y-4 max-h-[250px] overflow-y-auto pr-2">
+        {/* TRANSACTION FEED */}
+        <div className="premium-card rounded-2xl p-6 lg:col-span-2 space-y-4">
+          <h4 className="text-xs font-bold font-mono text-stone-gray uppercase tracking-wider border-b border-[rgba(247,231,206,0.08)] pb-2">
+            Recent On-Chain Activity
+          </h4>
+          <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2">
             {activityLogs.length === 0 ? (
-              <p className="text-xs text-on-surface-variant text-center py-6">No recent transactions recorded in this session.</p>
+              <div className="flex flex-col items-center justify-center py-10 space-y-2">
+                <Activity className="w-8 h-8 text-stone-gray/40" />
+                <p className="text-xs text-stone-gray">No transactions recorded in this active session.</p>
+              </div>
             ) : (
               activityLogs.map((log) => (
-                <div key={log.id} className="flex gap-4 items-start text-xs border-b border-outline-variant/5 pb-3">
-                  <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold shrink-0">
-                    <span className="material-symbols-outlined text-base">
-                      {log.type === "group_created" && "group_add"}
-                      {log.type === "member_joined" && "person_add"}
-                      {log.type === "member_left" && "person_remove"}
-                      {log.type === "expense_added" && "receipt_long"}
-                      {log.type === "expense_deleted" && "delete"}
-                      {log.type === "debt_settled" && "handshake"}
-                    </span>
+                <div key={log.id} className="flex gap-4 items-start text-xs border-b border-[rgba(247,231,206,0.05)] pb-3.5 last:border-b-0 last:pb-0">
+                  <div className="w-8 h-8 rounded-lg bg-[#B87333]/15 border border-[rgba(184,115,51,0.25)] flex items-center justify-center text-[#B87333] font-bold shrink-0">
+                    <Activity className="w-4 h-4" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-on-surface font-bold">{log.details}</p>
-                    <div className="flex items-center gap-2 mt-1 font-mono text-[10px] text-on-surface-variant">
-                      <span>{new Date(log.timestamp).toLocaleTimeString()}</span>
+                    <p className="text-[#F7E7CE] font-bold leading-normal">{log.details}</p>
+                    <div className="flex items-center gap-2 mt-1.5 font-mono text-[9px] text-stone-gray">
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        {new Date(log.timestamp).toLocaleTimeString()}
+                      </span>
                       <span>•</span>
                       <a
                         href={`https://stellar.expert/explorer/testnet/tx/${log.txHash}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-primary hover:underline flex items-center gap-0.5"
+                        className="text-[#B87333] hover:underline flex items-center gap-0.5"
                       >
                         {log.txHash.slice(0, 6)}...{log.txHash.slice(-4)}
-                        <span className="material-symbols-outlined text-[10px]">open_in_new</span>
+                        <ExternalLink className="w-2.5 h-2.5" />
                       </a>
                     </div>
                   </div>

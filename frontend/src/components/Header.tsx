@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+import { Wallet, Menu, X, Check, Landmark } from "lucide-react";
 
 interface HeaderProps {
   walletConnected: boolean;
@@ -19,52 +20,63 @@ export const Header: React.FC<HeaderProps> = ({
   activeTab,
   setActiveTab
 }) => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const tabs = [
+    { id: "dashboard", label: "Dashboard" },
+    { id: "groups", label: "Groups" },
+    { id: "stellar", label: "Stellar Hub" },
+    { id: "activity", label: "Activity" }
+  ];
+
   return (
-    <nav className="glass-nav fixed top-0 left-0 right-0 z-40 px-6 py-4">
-      <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#121212]/95 backdrop-blur-md border-b border-[rgba(184,115,51,0.15)] premium-shadow px-4 py-3 sm:px-6">
+      <div className="max-w-6xl mx-auto flex justify-between items-center">
         {/* LOGO */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl copper-gradient flex items-center justify-center shadow-lg">
-            <span className="material-symbols-outlined text-background text-2xl font-bold">account_balance_wallet</span>
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#B87333] to-[#8c4f10] flex items-center justify-center shadow-lg border border-[rgba(247,231,206,0.15)]">
+            <Landmark className="w-5 h-5 text-[#121212] stroke-[2.5]" />
           </div>
           <div>
-            <h1 className="text-xl font-black tracking-wider text-primary">SPLITPAY</h1>
-            <p className="text-[10px] text-on-surface-variant font-mono tracking-widest uppercase">Soroban Production Node</p>
+            <h1 className="text-lg font-black tracking-wider text-[#B87333] font-logo">SPLITPAY</h1>
+            <p className="text-[9px] text-stone-gray font-mono tracking-widest uppercase">Soroban Network Node</p>
           </div>
         </div>
 
-        {/* TABS */}
-        <div className="flex bg-surface-container/80 p-1 rounded-xl border border-outline-variant/10">
-          {["dashboard", "groups", "stellar", "activity"].map((tab) => (
+        {/* DESKTOP TABS */}
+        <div className="hidden md:flex bg-[#1A1A1A] p-1 rounded-xl border border-[rgba(247,231,206,0.08)]">
+          {tabs.map((tab) => (
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 capitalize ${
-                activeTab === tab
-                  ? "copper-bg text-background shadow-md font-extrabold"
-                  : "text-on-surface-variant hover:text-primary"
+              key={tab.id}
+              onClick={() => {
+                setActiveTab(tab.id);
+                setMobileMenuOpen(false);
+              }}
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 ${
+                activeTab === tab.id
+                  ? "btn-primary shadow-sm"
+                  : "text-stone-gray hover:text-[#B87333]"
               }`}
             >
-              {tab === "stellar" ? "Stellar Hub" : tab}
+              {tab.label}
             </button>
           ))}
         </div>
 
-        {/* WALLET BUTTON */}
-        <div className="flex items-center gap-4">
+        {/* DESKTOP WALLET PANEL */}
+        <div className="hidden lg:flex items-center gap-4">
           {walletConnected && userAddress && (
-            <div className="hidden sm:flex flex-col text-right">
-              <span className="text-[10px] text-on-surface-variant font-mono uppercase">Connected Address</span>
-              <span className="text-xs font-bold text-primary font-mono">
+            <div className="flex flex-col text-right">
+              <span className="text-[9px] text-stone-gray font-mono uppercase">Connected</span>
+              <span className="text-xs font-bold text-[#B87333] font-mono">
                 {userAddress.slice(0, 6)}...{userAddress.slice(-4)}
               </span>
             </div>
           )}
 
           {walletConnected && (
-            <div className="hidden sm:flex bg-[#1E1E1E] border border-outline-variant/10 px-3 py-1.5 rounded-lg items-center gap-2">
-              <span className="material-symbols-outlined text-primary text-sm">payments</span>
-              <span className="text-xs font-bold text-on-surface">{userBalance} XLM</span>
+            <div className="flex bg-[#1A1A1A] border border-[rgba(247,231,206,0.1)] px-3 py-1.5 rounded-lg items-center gap-2">
+              <span className="text-xs font-bold text-[#F7E7CE]">{userBalance} XLM</span>
             </div>
           )}
 
@@ -73,17 +85,99 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={onConnect}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black tracking-wide uppercase transition-all duration-300 ${
               walletConnected
-                ? "bg-[#1C3A27] text-[#A3E635] border border-[#22C55E]/20"
-                : "copper-button"
+                ? "bg-[#355E3B]/20 text-[#A4D2A6] border border-[#355E3B]/40"
+                : "btn-primary cursor-pointer"
             }`}
           >
-            <span className="material-symbols-outlined text-sm">
-              {walletConnected ? "check_circle" : "account_balance_wallet"}
-            </span>
-            {walletConnected ? "Wallet Connected" : "Connect Freighter"}
+            {walletConnected ? (
+              <>
+                <Check className="w-4 h-4" />
+                <span>Connected</span>
+              </>
+            ) : (
+              <>
+                <Wallet className="w-4 h-4" />
+                <span>Connect Freighter</span>
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* MOBILE CONTROLS & HAMBURGER */}
+        <div className="flex items-center gap-2 lg:hidden">
+          {walletConnected && (
+            <div className="bg-[#1A1A1A] border border-[rgba(247,231,206,0.08)] px-2.5 py-1.5 rounded-lg text-xs font-bold text-[#F7E7CE]">
+              {parseFloat(userBalance).toFixed(1)} XLM
+            </div>
+          )}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 rounded-lg bg-[#1A1A1A] border border-[rgba(247,231,206,0.08)] text-[#F7E7CE] hover:text-[#B87333] transition-colors"
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
       </div>
+
+      {/* MOBILE DRAWER / OVERLAY */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden absolute top-[65px] left-0 right-0 bg-[#121212]/95 backdrop-blur-md border-b border-[rgba(184,115,51,0.15)] px-4 py-6 space-y-4 fade-in">
+          <div className="flex flex-col gap-2">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setActiveTab(tab.id);
+                  setMobileMenuOpen(false);
+                }}
+                className={`w-full text-left px-4 py-3 rounded-lg text-sm font-bold transition-all duration-150 ${
+                  activeTab === tab.id
+                    ? "bg-[#B87333]/10 text-[#B87333] border-l-2 border-[#B87333]"
+                    : "text-[#F7E7CE]/80 hover:bg-[#1A1A1A] hover:text-[#B87333]"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="pt-4 border-t border-[rgba(247,231,206,0.08)] flex flex-col gap-3">
+            {walletConnected && userAddress && (
+              <div className="flex justify-between items-center px-2">
+                <span className="text-xs text-stone-gray font-mono">Address</span>
+                <span className="text-xs font-bold text-[#B87333] font-mono">
+                  {userAddress.slice(0, 8)}...{userAddress.slice(-6)}
+                </span>
+              </div>
+            )}
+
+            <button
+              disabled={loading}
+              onClick={() => {
+                onConnect();
+                setMobileMenuOpen(false);
+              }}
+              className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-black tracking-wide uppercase transition-all ${
+                walletConnected
+                  ? "bg-[#355E3B]/20 text-[#A4D2A6] border border-[#355E3B]/40"
+                  : "btn-primary cursor-pointer"
+              }`}
+            >
+              {walletConnected ? (
+                <>
+                  <Check className="w-4 h-4" />
+                  <span>Wallet Connected</span>
+                </>
+              ) : (
+                <>
+                  <Wallet className="w-4 h-4" />
+                  <span>Connect Freighter</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
     </nav>
   );
 };
