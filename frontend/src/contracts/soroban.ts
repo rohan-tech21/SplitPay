@@ -12,7 +12,7 @@ import { RPC_URL, NETWORK_PASSPHRASE } from "./config";
 const server = new Server(RPC_URL);
 
 // Dummy key used to run simulate/read-only calls when no user is logged in
-const DUMMY_PUBLIC_KEY = "GDB5M653ZNGF4Z4NKBV56T77J4G3K6P2CZXHOCPCO6PCD6PCD6PCD6PC";
+const DUMMY_PUBLIC_KEY = "GCAW5Q2KCBBR6RRVQRGHYOI7RMHC4V3TUADVHBZTEY5E3ADGCD5GW3HY";
 
 export async function simulateCall(contractId: string, functionName: string, args: any[]) {
   try {
