@@ -3,7 +3,8 @@ import {
   TransactionBuilder, 
   scValToNative, 
   Transaction,
-  rpc
+  rpc,
+  Account
 } from "@stellar/stellar-sdk";
 import { Server } from "@stellar/stellar-sdk/rpc";
 import { signTransaction } from "@stellar/freighter-api";
@@ -16,7 +17,7 @@ const DUMMY_PUBLIC_KEY = "GCAW5Q2KCBBR6RRVQRGHYOI7RMHC4V3TUADVHBZTEY5E3ADGCD5GW3
 
 export async function simulateCall(contractId: string, functionName: string, args: any[]) {
   try {
-    const account = await server.getAccount(DUMMY_PUBLIC_KEY);
+    const account = new Account(DUMMY_PUBLIC_KEY, "0");
     const tx = new TransactionBuilder(account, {
       fee: "100",
       networkPassphrase: NETWORK_PASSPHRASE
