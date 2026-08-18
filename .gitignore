@@ -4,3 +4,5 @@
 /frontend/dist
 .DS_Store
 *.log
+test_snapshots/
+**/test_snapshots/

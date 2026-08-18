@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, contracttype, contracterror, Env, Address, Vec, Symbol, symbol_short};
+use soroban_sdk::{contract, contractimpl, contracttype, contracterror, Env, Address, Vec, symbol_short};
 
 #[soroban_sdk::contractclient(name = "GroupManagerClient")]
 pub trait GroupManager {
@@ -191,6 +191,10 @@ impl SettlementManager {
 
         if !group_mgr_client.is_member(&group_id, &debtor) || !group_mgr_client.is_member(&group_id, &creditor) {
             return Err(Error::NotGroupMember);
+        }
+
+        if debtor == creditor {
+            return Err(Error::SelfSettlement);
         }
 
         let key = DataKey::Debt(group_id, debtor.clone(), creditor.clone());

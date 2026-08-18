@@ -2,7 +2,7 @@
 #[cfg(test)]
 mod test;
 
-use soroban_sdk::{contract, contractimpl, contracttype, contracterror, Env, Address, String, Vec, Symbol, symbol_short};
+use soroban_sdk::{contract, contractimpl, contracttype, contracterror, Env, Address, String, Vec, symbol_short};
 
 #[soroban_sdk::contractclient(name = "GroupManagerClient")]
 pub trait GroupManager {
@@ -50,6 +50,10 @@ pub struct Expense {
 #[derive(Clone)]
 #[contracttype]
 pub enum DataKey {
+    Initialized,
+    Admin,
+    GroupManager,
+    SettlementManager,
     ExpenseCount(u32), // group_id -> count
     ExpenseInfo(u32, u32), // group_id, expense_id -> Expense
     GroupExpenses(u32), // group_id -> Vec<u32> (expense_ids)
@@ -60,6 +64,22 @@ pub struct ExpenseManager;
 
 #[contractimpl]
 impl ExpenseManager {
+    // Initialize the contract with registered group & settlement managers
+    pub fn initialize(
+        env: Env,
+        admin: Address,
+        group_mgr: Address,
+        settle_mgr: Address,
+    ) -> Result<(), Error> {
+        if env.storage().instance().has(&DataKey::Initialized) {
+            return Ok(());
+        }
+        env.storage().instance().set(&DataKey::Initialized, &true);
+        env.storage().instance().set(&DataKey::Admin, &admin);
+        env.storage().instance().set(&DataKey::GroupManager, &group_mgr);
+        env.storage().instance().set(&DataKey::SettlementManager, &settle_mgr);
+        Ok(())
+    }
     // Add a new expense
     pub fn add_expense(
         env: Env,
@@ -73,6 +93,14 @@ impl ExpenseManager {
         splits: Vec<SplitDetail>,
     ) -> Result<u32, Error> {
         paid_by.require_auth();
+
+        if env.storage().instance().has(&DataKey::Initialized) {
+            let stored_group_mgr: Address = env.storage().instance().get(&DataKey::GroupManager).unwrap();
+            let stored_settle_mgr: Address = env.storage().instance().get(&DataKey::SettlementManager).unwrap();
+            if group_mgr != stored_group_mgr || settle_mgr != stored_settle_mgr {
+                return Err(Error::Unauthorized);
+            }
+        }
 
         // 1. Verify payer is a member of the group
         let group_mgr_client = GroupManagerClient::new(&env, &group_mgr);

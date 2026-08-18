@@ -2,7 +2,7 @@
 #[cfg(test)]
 mod test;
 
-use soroban_sdk::{contract, contractimpl, contracttype, contracterror, Env, Address, String, Vec, Symbol, symbol_short};
+use soroban_sdk::{contract, contractimpl, contracttype, contracterror, Env, Address, String, Vec, symbol_short};
 
 #[contracterror]
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
