@@ -1,5 +1,11 @@
-import { describe, it, expect } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+// @vitest-environment jsdom
+import './setup';
+import { describe, it, expect, afterEach } from 'vitest';
+import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
+
+afterEach(() => {
+  cleanup();
+});
 import { convertSplitsToScVal } from '../contracts/soroban';
 import { WalletProvider, useWallet } from '../wallet/WalletContext';
 import { FreighterAdapter } from '../wallet/FreighterAdapter';

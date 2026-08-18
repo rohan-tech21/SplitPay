@@ -31,6 +31,7 @@ function MainContent() {
     activityLogs,
     error,
     txProgress,
+    resetTxStatus,
     clearError,
     createGroup,
     joinGroup,
@@ -269,7 +270,7 @@ function MainContent() {
       {/* TRANSACTION STEP STATUS MODAL */}
       <TxStatusModal
         progress={txProgress}
-        onClose={() => {}}
+        onClose={resetTxStatus}
       />
 
       {/* CREATE GROUP MODAL */}

@@ -17,7 +17,7 @@ const server = new Server(RPC_URL);
 // Dummy key used to run simulate/read-only calls when no user is logged in
 export const DUMMY_PUBLIC_KEY = "GCAW5Q2KCBBR6RRVQRGHYOI7RMHC4V3TUADVHBZTEY5E3ADGCD5GW3HY";
 
-export type TxStep = 'Preparing' | 'Signing' | 'Submitting' | 'Confirming' | 'Success' | 'Failed';
+export type TxStep = 'Idle' | 'Preparing' | 'Signing' | 'Submitting' | 'Confirming' | 'Success' | 'Failed';
 
 export interface TxStatusCallback {
   (step: TxStep, message: string, hash?: string): void;

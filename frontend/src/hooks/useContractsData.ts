@@ -60,13 +60,22 @@ export function useContractsData() {
 
   const [txProgress, setTxProgress] = useState<TxProgressState>({
     isProcessing: false,
-    step: 'Preparing',
+    step: 'Idle',
     message: '',
   });
 
+  const resetTxStatus = useCallback(() => {
+    setTxProgress({
+      isProcessing: false,
+      step: 'Idle',
+      message: '',
+      txHash: undefined,
+    });
+  }, []);
+
   const updateTxStatus = (step: TxStep, message: string, hash?: string) => {
     setTxProgress({
-      isProcessing: step !== 'Success' && step !== 'Failed',
+      isProcessing: step !== 'Success' && step !== 'Failed' && step !== 'Idle',
       step,
       message,
       txHash: hash,
@@ -334,6 +343,7 @@ export function useContractsData() {
     activityLogs,
     error,
     txProgress,
+    resetTxStatus,
     clearError: () => setError(null),
     createGroup,
     joinGroup,
