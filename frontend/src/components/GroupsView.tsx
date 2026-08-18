@@ -6,19 +6,19 @@ interface GroupsViewProps {
   userAddress: string | null;
   groups: Group[];
   loading: boolean;
-  onJoinGroup: (groupId: number) => Promise<void>;
-  onLeaveGroup: (groupId: number) => Promise<void>;
-  onAddMember: (groupId: number, address: string) => Promise<void>;
+  onJoinGroup: (groupId: number) => Promise<any>;
+  onLeaveGroup: (groupId: number) => Promise<any>;
+  onAddMember: (groupId: number, address: string) => Promise<any>;
   onAddExpense: (
     groupId: number,
     description: string,
     amount: number,
     splitType: number,
     splits: { member: string; value: number }[]
-  ) => Promise<void>;
-  onDeleteExpense: (groupId: number, expenseId: number) => Promise<void>;
-  onSettleDebtManual: (groupId: number, creditor: string, amount: number) => Promise<void>;
-  onSettleDebtToken: (groupId: number, creditor: string, amount: number) => Promise<void>;
+  ) => Promise<any>;
+  onDeleteExpense: (groupId: number, expenseId: number) => Promise<any>;
+  onSettleDebtManual: (groupId: number, creditor: string, amount: number) => Promise<any>;
+  onSettleDebtToken: (groupId: number, creditor: string, amount: number) => Promise<any>;
 }
 
 export const GroupsView: React.FC<GroupsViewProps> = ({

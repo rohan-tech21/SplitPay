@@ -4,16 +4,24 @@ import {
   scValToNative, 
   Transaction,
   rpc,
-  Account
+  Account,
+  xdr,
+  Address,
+  nativeToScVal
 } from "@stellar/stellar-sdk";
 import { Server } from "@stellar/stellar-sdk/rpc";
-import { signTransaction } from "@stellar/freighter-api";
 import { RPC_URL, NETWORK_PASSPHRASE } from "./config";
 
 const server = new Server(RPC_URL);
 
 // Dummy key used to run simulate/read-only calls when no user is logged in
-const DUMMY_PUBLIC_KEY = "GCAW5Q2KCBBR6RRVQRGHYOI7RMHC4V3TUADVHBZTEY5E3ADGCD5GW3HY";
+export const DUMMY_PUBLIC_KEY = "GCAW5Q2KCBBR6RRVQRGHYOI7RMHC4V3TUADVHBZTEY5E3ADGCD5GW3HY";
+
+export type TxStep = 'Preparing' | 'Signing' | 'Submitting' | 'Confirming' | 'Success' | 'Failed';
+
+export interface TxStatusCallback {
+  (step: TxStep, message: string, hash?: string): void;
+}
 
 export async function simulateCall(contractId: string, functionName: string, args: any[]) {
   try {
@@ -34,7 +42,10 @@ export async function simulateCall(contractId: string, functionName: string, arg
     if (rpc.Api.isSimulationSuccess(sim) && sim.result) {
       return scValToNative(sim.result.retval);
     }
-    throw new Error(`Simulation returned no result for ${functionName}`);
+    if (rpc.Api.isSimulationError(sim)) {
+      console.warn(`Simulation returned error for ${functionName}:`, sim.error);
+    }
+    return null;
   } catch (err: any) {
     console.error(`Simulation failed for ${functionName}:`, err);
     throw err;
@@ -45,11 +56,23 @@ export async function submitTransaction(
   userPublicKey: string, 
   contractId: string, 
   functionName: string, 
-  args: any[]
+  args: any[],
+  signerFn: (xdrStr: string) => Promise<string>,
+  onStatusChange?: TxStatusCallback
 ): Promise<string> {
   try {
-    const account = await server.getAccount(userPublicKey);
-    
+    onStatusChange?.('Preparing', 'Fetching account sequence & building transaction footprint...');
+
+    let account: Account;
+    try {
+      account = await server.getAccount(userPublicKey);
+    } catch (accErr: any) {
+      if (accErr?.response?.status === 404 || accErr?.status === 404) {
+        throw new Error("Your Stellar Testnet account is unfunded or not found. Please fund your account using Friendbot.");
+      }
+      account = new Account(userPublicKey, "0");
+    }
+
     // 1. Build the base transaction
     let tx = new TransactionBuilder(account, {
       fee: "100",
@@ -60,55 +83,83 @@ export async function submitTransaction(
       function: functionName,
       args
     }))
-    .setTimeout(30)
+    .setTimeout(60)
     .build();
 
     // 2. Prepare transaction (simulate to fetch footprint and fees)
-    tx = await server.prepareTransaction(tx);
-
-    // 3. Request user signature via Freighter
-    const xdrStr = tx.toXDR();
-    const { signedTxXdr, error } = await signTransaction(xdrStr, {
-      networkPassphrase: NETWORK_PASSPHRASE
-    });
-
-    if (error) {
-      throw new Error(`Freighter signature rejected: ${error}`);
+    try {
+      tx = await server.prepareTransaction(tx);
+    } catch (prepErr: any) {
+      throw new Error(`Transaction simulation failed: ${prepErr?.message || prepErr}`);
     }
 
+    // 3. Request user signature via Wallet
+    onStatusChange?.('Signing', 'Prompting wallet signature approval...');
+    const xdrStr = tx.toXDR();
+    const signedTxXdr = await signerFn(xdrStr);
+
     if (!signedTxXdr) {
-      throw new Error("Freighter returned empty signature");
+      throw new Error("Wallet returned empty signature.");
     }
 
     // 4. Send transaction to the Soroban RPC server
+    onStatusChange?.('Submitting', 'Submitting signed envelope to Stellar RPC node...');
     const signedTx = new Transaction(signedTxXdr, NETWORK_PASSPHRASE);
     const sendRes = await server.sendTransaction(signedTx);
+    
     if (sendRes.status === "ERROR") {
-      throw new Error(`RPC returned transaction error: ${sendRes.status}`);
+      throw new Error(`RPC error on submission: ${JSON.stringify((sendRes as any).errorResultXdr || (sendRes as any).errorResult || sendRes.status)}`);
     }
 
-    // 5. Poll for finalization (status = SUCCESS / FAILED)
     const hash = sendRes.hash;
-    let txResult;
+    onStatusChange?.('Confirming', 'Waiting for ledger close confirmation...', hash);
+
+    // 5. Poll for finalization (status = SUCCESS / FAILED)
+    let txResult: any = null;
 
     for (let i = 0; i < 30; i++) {
       await new Promise((resolve) => setTimeout(resolve, 1500));
-      txResult = await server.getTransaction(hash);
-      
-      if (txResult.status === rpc.Api.GetTransactionStatus.SUCCESS) {
-        break;
-      } else if (txResult.status === rpc.Api.GetTransactionStatus.FAILED) {
-        throw new Error(`Transaction execution failed: ${txResult.resultXdr?.toXDR("base64")}`);
+      try {
+        txResult = await server.getTransaction(hash);
+        if (txResult.status === rpc.Api.GetTransactionStatus.SUCCESS) {
+          break;
+        } else if (txResult.status === rpc.Api.GetTransactionStatus.FAILED) {
+          throw new Error(`Transaction execution failed on-chain (status FAILED).`);
+        }
+      } catch (pollErr: any) {
+        // Continue polling if transaction is NOT_FOUND yet during ledger propagation
+        if (i === 29) throw pollErr;
       }
     }
 
     if (!txResult || txResult.status !== rpc.Api.GetTransactionStatus.SUCCESS) {
-      throw new Error(`Transaction polling timed out. Current status: ${txResult?.status}`);
+      throw new Error(`Transaction polling timed out after 45s.`);
     }
 
+    onStatusChange?.('Success', 'Transaction successfully confirmed on Stellar Testnet!', hash);
     return hash;
   } catch (err: any) {
-    console.error(`Transaction submission failed for ${functionName}:`, err);
+    const errorMsg = err?.message || String(err);
+    onStatusChange?.('Failed', errorMsg);
+    console.error(`Transaction submission error (${functionName}):`, err);
     throw err;
   }
+}
+
+// Helper to convert split definitions into Soroban ScVal SplitDetail vectors correctly
+export function convertSplitsToScVal(splits: { member: string; value: number }[]): xdr.ScVal {
+  return xdr.ScVal.scvVec(
+    splits.map((s) => {
+      return xdr.ScVal.scvMap([
+        new xdr.ScMapEntry({
+          key: xdr.ScVal.scvSymbol("member"),
+          val: Address.fromString(s.member).toScVal()
+        }),
+        new xdr.ScMapEntry({
+          key: xdr.ScVal.scvSymbol("value"),
+          val: nativeToScVal(BigInt(Math.round(s.value)), { type: "i128" })
+        })
+      ]);
+    })
+  );
 }

@@ -5,6 +5,9 @@ import { DashboardView } from "./components/DashboardView";
 import { GroupsView } from "./components/GroupsView";
 import { StellarHubView } from "./components/StellarHubView";
 import { ActivityView } from "./components/ActivityView";
+import { WalletProvider, useWallet } from "./wallet/WalletContext";
+import { WalletModal } from "./components/WalletModal";
+import { TxStatusModal } from "./components/TxStatusModal";
 import { 
   Zap, 
   ShieldAlert, 
@@ -19,17 +22,16 @@ import {
   Plus 
 } from "lucide-react";
 
-export default function App() {
+function MainContent() {
+  const wallet = useWallet();
   const {
-    walletConnected,
-    userAddress,
-    userBalance,
     loading,
     refreshing,
     groups,
     activityLogs,
     error,
-    checkWallet,
+    txProgress,
+    clearError,
     createGroup,
     joinGroup,
     leaveGroup,
@@ -43,6 +45,7 @@ export default function App() {
 
   const [activeTab, setActiveTab] = useState("dashboard");
   const [showCreateGroupModal, setShowCreateGroupModal] = useState(false);
+  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [demoMode, setDemoMode] = useState(false);
 
@@ -55,15 +58,11 @@ export default function App() {
       setNewGroupName("");
       setActiveTab("groups");
     } catch (err) {
-      // Error handled by hook
+      // Handled in progress state
     }
   };
 
-  const handleWalletConnect = () => {
-    checkWallet();
-  };
-
-  const showWorkspace = walletConnected || demoMode;
+  const showWorkspace = wallet.isConnected || demoMode;
 
   return (
     <div className="min-h-screen bg-[#121212] text-[#F7E7CE] font-sans antialiased selection:bg-[#B87333]/30 pb-16 relative">
@@ -75,11 +74,7 @@ export default function App() {
 
       {/* NAVBAR */}
       <Header
-        walletConnected={walletConnected}
-        userAddress={userAddress}
-        userBalance={userBalance}
-        loading={loading}
-        onConnect={handleWalletConnect}
+        onOpenWalletModal={() => setIsWalletModalOpen(true)}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
       />
@@ -96,7 +91,7 @@ export default function App() {
                   <span>{error}</span>
                 </div>
                 <button 
-                  onClick={() => refreshData()} 
+                  onClick={() => { clearError(); refreshData(); }} 
                   className="text-[10px] uppercase font-bold tracking-wider hover:underline text-[#B87333] cursor-pointer"
                 >
                   Retry Sync
@@ -106,9 +101,11 @@ export default function App() {
 
             <div className="flex flex-col sm:flex-row gap-2 justify-between items-start sm:items-center text-xs">
               <div className="flex items-center gap-2 text-stone-gray font-mono">
-                <span className={`w-2 h-2 rounded-full ${walletConnected ? "bg-green-500 animate-pulse" : "bg-yellow-500"}`} />
+                <span className={`w-2 h-2 rounded-full ${wallet.isConnected ? "bg-green-500 animate-pulse" : "bg-yellow-500"}`} />
                 <span>
-                  {walletConnected ? "Freighter Connected (Testnet)" : "Demo Mode (Read-Only Ledger)"}
+                  {wallet.isConnected 
+                    ? `Connected (${wallet.walletType.toUpperCase()}) - ${wallet.network || 'Testnet'}`
+                    : "Demo Mode (Read-Only Ledger)"}
                 </span>
               </div>
               <button
@@ -125,7 +122,7 @@ export default function App() {
           {/* TAB VIEWS */}
           {activeTab === "dashboard" && (
             <DashboardView
-              userAddress={userAddress}
+              userAddress={wallet.address}
               groups={groups}
               activityLogs={activityLogs}
               setActiveTab={setActiveTab}
@@ -135,7 +132,7 @@ export default function App() {
 
           {activeTab === "groups" && (
             <GroupsView
-              userAddress={userAddress}
+              userAddress={wallet.address}
               groups={groups}
               loading={loading}
               onJoinGroup={joinGroup}
@@ -172,11 +169,11 @@ export default function App() {
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
               <button
-                onClick={handleWalletConnect}
+                onClick={() => setIsWalletModalOpen(true)}
                 className="btn-primary w-full sm:w-auto px-8 py-3.5 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Wallet className="w-4 h-4" />
-                <span>Connect Freighter Wallet</span>
+                <span>Connect Stellar Wallet</span>
               </button>
               
               <button
@@ -244,9 +241,9 @@ export default function App() {
                 <div className="w-10 h-10 rounded-xl bg-[#B87333]/15 flex items-center justify-center text-[#B87333] border border-[rgba(184,115,51,0.2)]">
                   <Lock className="w-5 h-5" />
                 </div>
-                <h3 className="font-bold text-sm text-[#F7E7CE]">Freighter Signatures</h3>
+                <h3 className="font-bold text-sm text-[#F7E7CE]">Multi-Wallet Signatures</h3>
                 <p className="text-xs text-stone-gray leading-relaxed">
-                  Your keys never leave your device. Sign state transitions directly using your preferred Freighter browser extension.
+                  Your keys never leave your device. Sign state transitions directly using your preferred Freighter extension or Albedo web wallet.
                 </p>
               </div>
             </div>
@@ -256,12 +253,24 @@ export default function App() {
           <footer className="w-full border-t border-[rgba(247,231,206,0.05)] pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-[10px] text-stone-gray font-mono max-w-5xl">
             <div className="flex items-center gap-1.5">
               <Globe className="w-3.5 h-3.5 text-[#B87333]" />
-              <span>Stellar Level 4 Production-Grade Release</span>
+              <span>Stellar Level 3 Production Ready Audit Compliant</span>
             </div>
             <span>© {new Date().getFullYear()} SplitPay. All rights reserved.</span>
           </footer>
         </main>
       )}
+
+      {/* WALLET SELECTOR MODAL */}
+      <WalletModal
+        isOpen={isWalletModalOpen}
+        onClose={() => setIsWalletModalOpen(false)}
+      />
+
+      {/* TRANSACTION STEP STATUS MODAL */}
+      <TxStatusModal
+        progress={txProgress}
+        onClose={() => {}}
+      />
 
       {/* CREATE GROUP MODAL */}
       {showCreateGroupModal && (
@@ -311,5 +320,13 @@ export default function App() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <WalletProvider>
+      <MainContent />
+    </WalletProvider>
   );
 }

@@ -1,16 +1,14 @@
 import { useState, useEffect, useCallback } from "react";
 import { 
   Address, 
-  nativeToScVal, 
-  xdr, 
-  Horizon 
+  nativeToScVal
 } from "@stellar/stellar-sdk";
-import { isConnected, getAddress } from "@stellar/freighter-api";
 import { CONTRACTS } from "../contracts/config";
-import { simulateCall, submitTransaction } from "../contracts/soroban";
-
-// Setup Horizon server for balance checks
-const horizon = new Horizon.Server("https://horizon-testnet.stellar.org");
+import { simulateCall, submitTransaction, convertSplitsToScVal } from "../contracts/soroban";
+import type { TxStep } from "../contracts/soroban";
+import { useWallet } from "../wallet/WalletContext";
+import { eventIngestion } from "../events/SorobanEventIngestion";
+import type { LedgerEventLog } from "../events/SorobanEventIngestion";
 
 export interface Group {
   id: number;
@@ -25,7 +23,7 @@ export interface Expense {
   id: number;
   groupId: number;
   description: string;
-  amount: number; // Native decimal/BigInt representation
+  amount: number; // Native decimal
   paidBy: string;
   splitType: number; // 0=Equal, 1=Percentage, 2=Custom
   splits: { member: string; value: number }[];
@@ -39,78 +37,69 @@ export interface Debt {
 
 export interface ActivityLog {
   id: string;
-  type: "group_created" | "member_joined" | "member_left" | "expense_added" | "expense_deleted" | "debt_settled";
+  type: string;
   timestamp: string;
   details: string;
   txHash: string;
 }
 
+export interface TxProgressState {
+  isProcessing: boolean;
+  step: TxStep;
+  message: string;
+  txHash?: string;
+}
+
 export function useContractsData() {
-  const [walletConnected, setWalletConnected] = useState(false);
-  const [userAddress, setUserAddress] = useState<string | null>(null);
-  const [userBalance, setUserBalance] = useState("0.00");
+  const wallet = useWallet();
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [groups, setGroups] = useState<Group[]>([]);
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  // Check wallet connection
-  const checkWallet = useCallback(async () => {
-    try {
-      const connObj = await isConnected();
-      const connected = !!connObj.isConnected;
-      setWalletConnected(connected);
-      if (connected) {
-        const addrObj = await getAddress();
-        const address = addrObj.address;
-        if (address) {
-          setUserAddress(address);
-          // Load balance
-          const acc = await horizon.loadAccount(address);
-          const bal = acc.balances.find((b) => b.asset_type === "native");
-          setUserBalance(bal ? parseFloat(bal.balance).toFixed(2) : "0.00");
-        }
-      } else {
-        setUserAddress(null);
-        setUserBalance("0.00");
-      }
-    } catch (err: any) {
-      console.error("Wallet check failed:", err);
-    }
-  }, []);
+  const [txProgress, setTxProgress] = useState<TxProgressState>({
+    isProcessing: false,
+    step: 'Preparing',
+    message: '',
+  });
 
-  // Fetch all contract state
+  const updateTxStatus = (step: TxStep, message: string, hash?: string) => {
+    setTxProgress({
+      isProcessing: step !== 'Success' && step !== 'Failed',
+      step,
+      message,
+      txHash: hash,
+    });
+  };
+
+  // Fetch all contract state from Soroban RPC simulation
   const fetchData = useCallback(async () => {
     setRefreshing(true);
     setError(null);
     try {
       // 1. Get group count
       const countResult = await simulateCall(CONTRACTS.groupManager, "get_group_count", []);
-      const count = Number(countResult);
+      const count = Number(countResult || 0);
 
       const loadedGroups: Group[] = [];
 
       // 2. Fetch details for each group in parallel
       const groupPromises = Array.from({ length: count }, (_, idx) => idx + 1).map(async (groupId) => {
         try {
-          // Fetch group basic info
           const groupInfo = await simulateCall(CONTRACTS.groupManager, "get_group", [
             nativeToScVal(groupId, { type: "u32" })
           ]);
           if (!groupInfo) return null;
 
-          // Fetch group members
           const membersList = await simulateCall(CONTRACTS.groupManager, "get_members", [
             nativeToScVal(groupId, { type: "u32" })
           ]);
 
-          // Fetch expenses
           const rawExpenses = await simulateCall(CONTRACTS.expenseManager, "get_group_expenses", [
             nativeToScVal(groupId, { type: "u32" })
           ]);
 
-          // Fetch debts
           const rawDebts = await simulateCall(CONTRACTS.settlementManager, "get_group_debts", [
             nativeToScVal(groupId, { type: "u32" })
           ]);
@@ -119,7 +108,7 @@ export function useContractsData() {
           const debts: Debt[] = (Array.isArray(rawDebts) ? rawDebts : []).map((d: any) => ({
             debtor: d.debtor,
             creditor: d.creditor,
-            amount: Number(d.amount) / 100 // Convert back from cents/scaled int if scaled
+            amount: Number(d.amount) / 100
           }));
 
           const expenses: Expense[] = (Array.isArray(rawExpenses) ? rawExpenses : []).map((e: any) => ({
@@ -163,114 +152,85 @@ export function useContractsData() {
     }
   }, []);
 
-  // Sync wallet on mount
-  useEffect(() => {
-    checkWallet();
-    // Refresh balance periodically
-    const interval = setInterval(checkWallet, 15000);
-    return () => clearInterval(interval);
-  }, [checkWallet]);
-
-  // Sync contract data when connected or explicitly triggered
+  // Real-time Event Ingestion Polling setup
   useEffect(() => {
     fetchData();
+
+    eventIngestion.startPolling((realEvents: LedgerEventLog[]) => {
+      const formatted: ActivityLog[] = realEvents.map((ev) => ({
+        id: ev.id,
+        type: ev.topic,
+        timestamp: ev.timestamp,
+        details: ev.details,
+        txHash: ev.txHash,
+      }));
+      setActivityLogs(formatted);
+    }, 12000);
+
+    return () => {
+      eventIngestion.stopPolling();
+    };
   }, [fetchData]);
 
-  // 1. Create Group
-  const createGroup = async (name: string) => {
-    if (!userAddress) throw new Error("Wallet not connected");
+  // Execute transaction with standard progress feedback
+  const executeTx = async (
+    contractId: string,
+    functionName: string,
+    args: any[]
+  ): Promise<string> => {
+    if (!wallet.address) {
+      throw new Error("Please connect your wallet first.");
+    }
     setLoading(true);
     setError(null);
     try {
-      const args = [
-        Address.fromString(userAddress).toScVal(),
-        nativeToScVal(name, { type: "string" })
-      ];
-      const txHash = await submitTransaction(userAddress, CONTRACTS.groupManager, "create_group", args);
-      
-      // Update logs
-      setActivityLogs((prev) => [
-        {
-          id: Math.random().toString(),
-          type: "group_created",
-          timestamp: new Date().toISOString(),
-          details: `Created group "${name}"`,
-          txHash
-        },
-        ...prev
-      ]);
+      const hash = await submitTransaction(
+        wallet.address,
+        contractId,
+        functionName,
+        args,
+        (xdrStr) => wallet.signTransaction(xdrStr),
+        updateTxStatus
+      );
       await fetchData();
-      await checkWallet();
+      await wallet.refreshBalance();
+      return hash;
     } catch (err: any) {
-      setError(err.message || "Failed to create group.");
+      setError(err.message || "Transaction failed.");
       throw err;
     } finally {
       setLoading(false);
     }
+  };
+
+  // 1. Create Group
+  const createGroup = async (name: string) => {
+    if (!wallet.address) throw new Error("Wallet not connected");
+    const args = [
+      Address.fromString(wallet.address).toScVal(),
+      nativeToScVal(name, { type: "string" })
+    ];
+    return executeTx(CONTRACTS.groupManager, "create_group", args);
   };
 
   // 2. Join Group
   const joinGroup = async (groupId: number) => {
-    if (!userAddress) throw new Error("Wallet not connected");
-    setLoading(true);
-    setError(null);
-    try {
-      const args = [
-        nativeToScVal(groupId, { type: "u32" }),
-        Address.fromString(userAddress).toScVal()
-      ];
-      const txHash = await submitTransaction(userAddress, CONTRACTS.groupManager, "join_group", args);
-      
-      setActivityLogs((prev) => [
-        {
-          id: Math.random().toString(),
-          type: "member_joined",
-          timestamp: new Date().toISOString(),
-          details: `Joined group #${groupId}`,
-          txHash
-        },
-        ...prev
-      ]);
-      await fetchData();
-      await checkWallet();
-    } catch (err: any) {
-      setError(err.message || "Failed to join group.");
-      throw err;
-    } finally {
-      setLoading(false);
-    }
+    if (!wallet.address) throw new Error("Wallet not connected");
+    const args = [
+      nativeToScVal(groupId, { type: "u32" }),
+      Address.fromString(wallet.address).toScVal()
+    ];
+    return executeTx(CONTRACTS.groupManager, "join_group", args);
   };
 
   // 3. Leave Group
   const leaveGroup = async (groupId: number) => {
-    if (!userAddress) throw new Error("Wallet not connected");
-    setLoading(true);
-    setError(null);
-    try {
-      const args = [
-        nativeToScVal(groupId, { type: "u32" }),
-        Address.fromString(userAddress).toScVal()
-      ];
-      const txHash = await submitTransaction(userAddress, CONTRACTS.groupManager, "leave_group", args);
-      
-      setActivityLogs((prev) => [
-        {
-          id: Math.random().toString(),
-          type: "member_left",
-          timestamp: new Date().toISOString(),
-          details: `Left group #${groupId}`,
-          txHash
-        },
-        ...prev
-      ]);
-      await fetchData();
-      await checkWallet();
-    } catch (err: any) {
-      setError(err.message || "Failed to leave group.");
-      throw err;
-    } finally {
-      setLoading(false);
-    }
+    if (!wallet.address) throw new Error("Wallet not connected");
+    const args = [
+      nativeToScVal(groupId, { type: "u32" }),
+      Address.fromString(wallet.address).toScVal()
+    ];
+    return executeTx(CONTRACTS.groupManager, "leave_group", args);
   };
 
   // 4. Add Expense
@@ -281,214 +241,100 @@ export function useContractsData() {
     splitType: number,
     splits: { member: string; value: number }[]
   ) => {
-    if (!userAddress) throw new Error("Wallet not connected");
-    setLoading(true);
-    setError(null);
-    try {
-      // Scale amount to cents/integers for contract storage precision (amount * 100)
-      const scaledAmount = Math.round(amount * 100);
-      const scaledSplits = splits.map((s) => ({
+    if (!wallet.address) throw new Error("Wallet not connected");
+    const scaledAmount = Math.round(amount * 100);
+
+    let scaledSplits: { member: string; value: number }[] = [];
+    if (splitType === 1) {
+      // Percentage split: convert percentage (e.g. 50%) to basis points (5000 bps)
+      scaledSplits = splits.map((s) => ({
         member: s.member,
         value: Math.round(s.value * 100)
       }));
-
-      // Pre-compile splits vector ScVal
-      const splitsVecScVal = xdr.ScVal.scvVec(
-        scaledSplits.map((s) => xdr.ScVal.scvMap([
-          new xdr.ScMapEntry({
-            key: xdr.ScVal.scvSymbol("member"),
-            val: Address.fromString(s.member).toScVal()
-          }),
-          new xdr.ScMapEntry({
-            key: xdr.ScVal.scvSymbol("value"),
-            val: nativeToScVal(BigInt(s.value), { type: "i128" })
-          })
-        ]))
-      );
-
-      const args = [
-        Address.fromString(CONTRACTS.groupManager).toScVal(),
-        Address.fromString(CONTRACTS.settlementManager).toScVal(),
-        nativeToScVal(groupId, { type: "u32" }),
-        nativeToScVal(description, { type: "string" }),
-        nativeToScVal(BigInt(scaledAmount), { type: "i128" }),
-        Address.fromString(userAddress).toScVal(),
-        nativeToScVal(splitType, { type: "u32" }),
-        splitsVecScVal
-      ];
-
-      const txHash = await submitTransaction(userAddress, CONTRACTS.expenseManager, "add_expense", args);
-      
-      setActivityLogs((prev) => [
-        {
-          id: Math.random().toString(),
-          type: "expense_added",
-          timestamp: new Date().toISOString(),
-          details: `Added expense "${description}" of $${amount.toFixed(2)}`,
-          txHash
-        },
-        ...prev
-      ]);
-      await fetchData();
-      await checkWallet();
-    } catch (err: any) {
-      setError(err.message || "Failed to add expense.");
-      throw err;
-    } finally {
-      setLoading(false);
+    } else {
+      // Equal or Custom split: convert dollar amounts to cents
+      scaledSplits = splits.map((s) => ({
+        member: s.member,
+        value: Math.round(s.value * 100)
+      }));
     }
+
+    const splitsScVal = convertSplitsToScVal(scaledSplits);
+
+    const args = [
+      Address.fromString(CONTRACTS.groupManager).toScVal(),
+      Address.fromString(CONTRACTS.settlementManager).toScVal(),
+      nativeToScVal(groupId, { type: "u32" }),
+      nativeToScVal(description, { type: "string" }),
+      nativeToScVal(BigInt(scaledAmount), { type: "i128" }),
+      Address.fromString(wallet.address).toScVal(),
+      nativeToScVal(splitType, { type: "u32" }),
+      splitsScVal
+    ];
+
+    return executeTx(CONTRACTS.expenseManager, "add_expense", args);
   };
 
   // 5. Delete Expense
   const deleteExpense = async (groupId: number, expenseId: number) => {
-    if (!userAddress) throw new Error("Wallet not connected");
-    setLoading(true);
-    setError(null);
-    try {
-      const args = [
-        Address.fromString(CONTRACTS.settlementManager).toScVal(),
-        nativeToScVal(groupId, { type: "u32" }),
-        nativeToScVal(expenseId, { type: "u32" }),
-        Address.fromString(userAddress).toScVal()
-      ];
-
-      const txHash = await submitTransaction(userAddress, CONTRACTS.expenseManager, "delete_expense", args);
-      
-      setActivityLogs((prev) => [
-        {
-          id: Math.random().toString(),
-          type: "expense_deleted",
-          timestamp: new Date().toISOString(),
-          details: `Deleted expense #${expenseId} in group #${groupId}`,
-          txHash
-        },
-        ...prev
-      ]);
-      await fetchData();
-      await checkWallet();
-    } catch (err: any) {
-      setError(err.message || "Failed to delete expense.");
-      throw err;
-    } finally {
-      setLoading(false);
-    }
+    if (!wallet.address) throw new Error("Wallet not connected");
+    const args = [
+      Address.fromString(CONTRACTS.settlementManager).toScVal(),
+      nativeToScVal(groupId, { type: "u32" }),
+      nativeToScVal(expenseId, { type: "u32" }),
+      Address.fromString(wallet.address).toScVal()
+    ];
+    return executeTx(CONTRACTS.expenseManager, "delete_expense", args);
   };
 
   // 6. Settle Debt Manual
   const settleDebtManual = async (groupId: number, creditor: string, amount: number) => {
-    if (!userAddress) throw new Error("Wallet not connected");
-    setLoading(true);
-    setError(null);
-    try {
-      const scaledAmount = Math.round(amount * 100);
-      const args = [
-        nativeToScVal(groupId, { type: "u32" }),
-        Address.fromString(userAddress).toScVal(), // debtor
-        Address.fromString(creditor).toScVal(),
-        nativeToScVal(BigInt(scaledAmount), { type: "i128" })
-      ];
-
-      const txHash = await submitTransaction(userAddress, CONTRACTS.settlementManager, "settle_debt_manual", args);
-      
-      setActivityLogs((prev) => [
-        {
-          id: Math.random().toString(),
-          type: "debt_settled",
-          timestamp: new Date().toISOString(),
-          details: `Manually settled $${amount.toFixed(2)} with ${creditor.slice(0, 6)}...${creditor.slice(-4)}`,
-          txHash
-        },
-        ...prev
-      ]);
-      await fetchData();
-      await checkWallet();
-    } catch (err: any) {
-      setError(err.message || "Failed to settle debt manually.");
-      throw err;
-    } finally {
-      setLoading(false);
-    }
+    if (!wallet.address) throw new Error("Wallet not connected");
+    const scaledAmount = Math.round(amount * 100);
+    const args = [
+      nativeToScVal(groupId, { type: "u32" }),
+      Address.fromString(wallet.address).toScVal(),
+      Address.fromString(creditor).toScVal(),
+      nativeToScVal(BigInt(scaledAmount), { type: "i128" })
+    ];
+    return executeTx(CONTRACTS.settlementManager, "settle_debt_manual", args);
   };
 
-  // 7. Settle Debt Token (XLM Native contract)
+  // 7. Settle Debt Token (XLM Native SAC contract)
   const settleDebtToken = async (groupId: number, creditor: string, amount: number) => {
-    if (!userAddress) throw new Error("Wallet not connected");
-    setLoading(true);
-    setError(null);
-    try {
-      const scaledAmount = Math.round(amount * 100);
-      const args = [
-        Address.fromString(CONTRACTS.xlmToken).toScVal(),
-        nativeToScVal(groupId, { type: "u32" }),
-        Address.fromString(userAddress).toScVal(), // debtor
-        Address.fromString(creditor).toScVal(),
-        nativeToScVal(BigInt(scaledAmount), { type: "i128" })
-      ];
-
-      const txHash = await submitTransaction(userAddress, CONTRACTS.settlementManager, "settle_debt_token", args);
-      
-      setActivityLogs((prev) => [
-        {
-          id: Math.random().toString(),
-          type: "debt_settled",
-          timestamp: new Date().toISOString(),
-          details: `Settled $${amount.toFixed(2)} using XLM Token with ${creditor.slice(0, 6)}...${creditor.slice(-4)}`,
-          txHash
-        },
-        ...prev
-      ]);
-      await fetchData();
-      await checkWallet();
-    } catch (err: any) {
-      setError(err.message || "Failed to settle debt using token.");
-      throw err;
-    } finally {
-      setLoading(false);
-    }
+    if (!wallet.address) throw new Error("Wallet not connected");
+    const scaledAmount = Math.round(amount * 100);
+    const args = [
+      Address.fromString(CONTRACTS.xlmToken).toScVal(),
+      nativeToScVal(groupId, { type: "u32" }),
+      Address.fromString(wallet.address).toScVal(),
+      Address.fromString(creditor).toScVal(),
+      nativeToScVal(BigInt(scaledAmount), { type: "i128" })
+    ];
+    return executeTx(CONTRACTS.settlementManager, "settle_debt_token", args);
   };
 
   // 8. Add Member to Group
   const addMember = async (groupId: number, memberAddress: string) => {
-    if (!userAddress) throw new Error("Wallet not connected");
-    setLoading(true);
-    setError(null);
-    try {
-      const args = [
-        nativeToScVal(groupId, { type: "u32" }),
-        Address.fromString(memberAddress).toScVal()
-      ];
-      const txHash = await submitTransaction(userAddress, CONTRACTS.groupManager, "join_group", args);
-      
-      setActivityLogs((prev) => [
-        {
-          id: Math.random().toString(),
-          type: "member_joined",
-          timestamp: new Date().toISOString(),
-          details: `Added member ${memberAddress.slice(0, 6)}...${memberAddress.slice(-4)} to group #${groupId}`,
-          txHash
-        },
-        ...prev
-      ]);
-      await fetchData();
-      await checkWallet();
-    } catch (err: any) {
-      setError(err.message || "Failed to add group member.");
-      throw err;
-    } finally {
-      setLoading(false);
-    }
+    if (!wallet.address) throw new Error("Wallet not connected");
+    const args = [
+      nativeToScVal(groupId, { type: "u32" }),
+      Address.fromString(memberAddress).toScVal()
+    ];
+    return executeTx(CONTRACTS.groupManager, "join_group", args);
   };
 
   return {
-    walletConnected,
-    userAddress,
-    userBalance,
+    walletConnected: wallet.isConnected,
+    userAddress: wallet.address,
+    userBalance: wallet.balance.toFixed(2),
     loading,
     refreshing,
     groups,
     activityLogs,
     error,
-    checkWallet,
+    txProgress,
+    clearError: () => setError(null),
     createGroup,
     joinGroup,
     leaveGroup,
