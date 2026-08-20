@@ -1,5 +1,6 @@
 <!-- Project Logo & Header -->
 # 💸 SplitPay
+https://split-pay21.netlify.app/
 
 ### *Split Expenses. Settle Instantly. Programmatic Trust.*
 
@@ -110,8 +111,7 @@ To become the primary decentralized accounting protocol for personal, corporate,
 ## 🚀 Live Demo
 
 ### Frontend Dashboard
-> https://splitpay-dapp.vercel.app *(Placeholder)*
-
+> [https://splitpay-dapp.vercel.app](https://split-pay21.netlify.app/) 
 ### Smart Contracts
 | Contract | Network | Address |
 | :--- | :--- | :--- |
