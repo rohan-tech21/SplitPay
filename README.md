@@ -1,8 +1,4 @@
 <!-- Project Logo & Header -->
-<p align="center">
-  <img src="https://raw.githubusercontent.com/rohan-tech21/SplitPay/main/frontend/public/favicon.svg" alt="SplitPay Logo" width="120" height="120" />
-</p>
-
 # 💸 SplitPay
 
 ### *Split Expenses. Settle Instantly. Programmatic Trust.*
@@ -142,23 +138,24 @@ To become the primary decentralized accounting protocol for personal, corporate,
 ## 📸 Screenshots
 
 ### 1. Landing View
-![Landing Page](./assets/screenshots/landing.png)
+<img width="1919" height="976" alt="image" src="https://github.com/user-attachments/assets/d39ddbc0-df85-4bc8-adef-98b43e214d2f" />
 *Modern Aurelian Reserve landing screen prompting secure wallet connection.*
 
 ### 2. Main Dashboard & Groups
-![Dashboard Page](./assets/screenshots/dashboard.png)
+<img width="1919" height="933" alt="image" src="https://github.com/user-attachments/assets/f3225c5d-c386-409c-8dd1-37b92c5b3452" />
 *Active group cards displaying balances, current debt listings, and activity streams.*
 
 ### 3. Expense Split Configurations
-![Split Form](./assets/screenshots/group.png)
+<img width="1919" height="930" alt="image" src="https://github.com/user-attachments/assets/a4754adf-72a9-4f49-87a3-df49e92f67c5" />
 *Detailed expense splitter handling equal, percentage, and custom cent structures.*
 
 ### 4. Settlement Window
-![Settlement Panel](./assets/screenshots/settlement.png)
+<img width="1905" height="936" alt="image" src="https://github.com/user-attachments/assets/999a9c44-f1c7-4c80-bd1c-4bbd79ac6038" />
 *Interactive manual or token-based settlement portal executing live Freighter signatures.*
 
 ### 5. Responsive Mobile UI
-![Mobile View](./assets/screenshots/mobile.png)
+<img width="397" height="795" alt="image" src="https://github.com/user-attachments/assets/12a4d786-9f04-415f-987d-81534d8be809" />
+
 *Optimized viewport layout tailored for mobile devices.*
 
 ---
@@ -178,14 +175,14 @@ SplitPay was audited and tested by **10 unique users** using Freighter Wallet on
 ## 📝 User Feedback Form
 
 We welcome developer and validator audits. Please submit suggestions, observed gas metrics, or compatibility feedback here:
-> [Google Feedback Form Placeholder](https://forms.gle/splitpay-feedback-placeholder)
+> [Google Feedback Form Placeholder](https://forms.gle/s8vC1GHB9g2ytxug8)
 
 ---
 
 ## 📊 User Responses
 
 The raw data detailing user logins, tester wallets, and completed settlement proof hashes is logged inside:
-> [Google Spreadsheet Results Placeholder](https://docs.google.com/spreadsheets/d/splitpay-spreadsheet-placeholder/edit)
+> [Google Spreadsheet Results Placeholder](https://docs.google.com/spreadsheets/d/1AkFcraPZKqQDltBI68WRhe51G-9Q-COgiXQyRA0oM58/edit?usp=sharing)
 
 ---
 
@@ -426,6 +423,8 @@ cargo test
 We use **GitHub Actions** to enforce quality on every code push:
 - **`test-contracts`**: Standardizes dependencies, sets up the stable target architecture, and compiles/verifies Rust tests.
 - **`build-frontend`**: Installs NPM packages, validates typescript dependencies, and compiles the production bundle via Vite.
+
+<img width="1899" height="975" alt="image" src="https://github.com/user-attachments/assets/db64f038-e8b6-428a-99e7-d85624bf3339" />
 
 ---
 
